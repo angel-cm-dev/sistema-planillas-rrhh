@@ -1,0 +1,49 @@
+# Levanta el sistema completo:  docker compose up -d --build
+#   Web:     http://localhost:8080
+#   Swagger: http://localhost:5080/swagger
+name: planillas-rrhh
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:?Defina MSSQL_SA_PASSWORD en .env}
+      MSSQL_PID: Developer
+    ports:
+      - "${DB_PORT:-1433}:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  api:
+    build: ./backend
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      Database__Provider: SqlServer
+      ConnectionStrings__Default: "Server=db,1433;Database=PlanillasRrhh;User Id=sa;Password=${MSSQL_SA_PASSWORD};TrustServerCertificate=True"
+      Jwt__Key: ${JWT_KEY:?Defina JWT_KEY en .env}
+      Jwt__ExpiraEnMinutos: ${JWT_EXPIRA_MINUTOS:-480}
+      Cors__Origins__0: http://localhost:${WEB_PORT:-8080}
+    ports:
+      - "${API_PORT:-5080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:

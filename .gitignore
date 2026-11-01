@@ -1,0 +1,30 @@
+# .NET
+bin/
+obj/
+TestResults/
+*.user
+*.suo
+.vs/
+
+# Bases de datos locales (SQLite de desarrollo)
+*.db
+*.db-shm
+*.db-wal
+
+# Node / Vite
+node_modules/
+dist/
+coverage/
+*.local
+
+# Entorno y secretos
+.env
+.env.*
+!.env.example
+
+# Editores y SO
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db

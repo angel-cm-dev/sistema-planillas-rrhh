@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { color-scheme: light; }
+  .dark { color-scheme: dark; }
+}
+
+/* Boleta imprimible: al imprimir se ocultan sidebar/header (clases print:hidden) y se fuerza fondo blanco. */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  html, body { background: #fff !important; color: #000 !important; }
+  .dark { color-scheme: light; }
+}
